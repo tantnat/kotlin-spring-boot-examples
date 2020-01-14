@@ -1,9 +1,23 @@
 package com.github.tantnat.batch.processor.simple
 
 import org.springframework.batch.item.ItemReader
+import java.util.*
 
-class SimpleReader : ItemReader<String> {
+open class SimpleReader : ItemReader<String> {
+
+    private val items = ArrayDeque<String>()
+
+    init {
+        for (i in 1..10) {
+            items.add("test data #$i")
+        }
+    }
+
     override fun read(): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return if (items.isNotEmpty()) {
+            items.poll()
+        } else {
+            null
+        }
     }
 }
