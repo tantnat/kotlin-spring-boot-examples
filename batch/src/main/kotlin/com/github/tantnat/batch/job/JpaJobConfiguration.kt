@@ -8,47 +8,59 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory
 import org.springframework.batch.item.ItemProcessor
-import org.springframework.batch.item.ItemReader
-import org.springframework.batch.item.ItemWriter
+import org.springframework.batch.item.database.JpaItemWriter
+import org.springframework.batch.item.database.JpaPagingItemReader
+import org.springframework.batch.item.database.builder.JpaItemWriterBuilder
+import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Scope
-import org.springframework.context.annotation.ScopedProxyMode
-import org.springframework.web.context.WebApplicationContext
+import java.time.LocalDate
+import javax.persistence.EntityManagerFactory
 
 @Configuration
 @EnableBatchProcessing
 class JpaJobConfiguration(
-        private val jobBuilderFactory: JobBuilderFactory,
-        private val stepBuilderFactory: StepBuilderFactory
+    private val jobBuilderFactory: JobBuilderFactory,
+    private val stepBuilderFactory: StepBuilderFactory,
+    private val entityManagerFactory: EntityManagerFactory
 ) {
 
     @Bean
 //    @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
     fun jpaSimpleJob(): Job = jobBuilderFactory.get("JpaSimpleJob")
-            .start(jpaSimpleJobStep())
-            .build()
+        .start(jpaSimpleJobStep())
+        .build()
 
     @Bean
     fun jpaSimpleJobStep(): Step = stepBuilderFactory.get("JpaSimpleStep")
-            .chunk<SimpleJpaEntity, SimpleJpaProcessedEntity>(5)
-            .reader(jpaSimpleReader())
-            .processor(jpaSimpleProcessor())
-            .writer(jpaSimpleWriter())
-            .build()
+        .chunk<SimpleJpaEntity, SimpleJpaProcessedEntity>(5)
+        .reader(jpaSimpleReader())
+        .processor(jpaSimpleProcessor())
+        .writer(jpaSimpleWriter())
+        .build()
 
     @Bean
-    fun jpaSimpleReader(): ItemReader<out SimpleJpaEntity> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun jpaSimpleReader(): JpaPagingItemReader<out SimpleJpaEntity> {
+        return JpaPagingItemReaderBuilder<SimpleJpaEntity>()
+            .entityManagerFactory(entityManagerFactory)
+            .queryString("from SimpleJpaEntity c")
+            .pageSize(2)
+            .build()
     }
 
     @Bean
     fun jpaSimpleProcessor(): ItemProcessor<SimpleJpaEntity, SimpleJpaProcessedEntity> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ItemProcessor { it.convertToProcessedEntity() }
     }
 
     @Bean
-    fun jpaSimpleWriter(): ItemWriter<SimpleJpaProcessedEntity> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun jpaSimpleWriter(): JpaItemWriter<SimpleJpaProcessedEntity> {
+        return JpaItemWriterBuilder<SimpleJpaProcessedEntity>()
+            .entityManagerFactory(entityManagerFactory)
+            .build()
     }
+}
+
+private fun SimpleJpaEntity.convertToProcessedEntity(): SimpleJpaProcessedEntity? {
+    return SimpleJpaProcessedEntity(0, this.name, this.surname, LocalDate.now())
 }
