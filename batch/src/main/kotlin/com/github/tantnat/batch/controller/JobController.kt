@@ -19,12 +19,26 @@ class JobController(private val jobLauncher: JobLauncher) {
     @Autowired
     lateinit var simpleJob: Job
 
-    @PostMapping
+    @Qualifier("jpaSimpleJob")
+    @Autowired
+    lateinit var jpaSimpleJob: Job
+
+    @PostMapping("/simple")
     fun startSimpleJob() {
         val jobParams = JobParametersBuilder()
                 .addDate("currentDate", Date.from(Instant.now()))
                 .toJobParameters()
         jobLauncher.run(simpleJob, jobParams)
     }
+
+
+    @PostMapping("/jpaSimple")
+    fun startJpaSimpleJob() {
+        val jobParams = JobParametersBuilder()
+            .addDate("currentDate", Date.from(Instant.now()))
+            .toJobParameters()
+        jobLauncher.run(jpaSimpleJob, jobParams)
+    }
+
 
 }

@@ -49,6 +49,7 @@ class JpaJobConfiguration(
     @StepScope
     fun jpaSimpleReader(): JpaPagingItemReader<out SimpleJpaEntity> {
         return JpaPagingItemReaderBuilder<SimpleJpaEntity>()
+            .name("simple jpa")
             .entityManagerFactory(entityManagerFactory)
             .queryString("from SimpleJpaEntity c")
             .pageSize(2)
@@ -71,5 +72,5 @@ class JpaJobConfiguration(
 }
 
 private fun SimpleJpaEntity.convertToProcessedEntity(): SimpleJpaProcessedEntity? {
-    return SimpleJpaProcessedEntity(0, this.name, this.surname, LocalDate.now())
+    return SimpleJpaProcessedEntity(0, this.name.toUpperCase(), this.surname.toUpperCase(), LocalDate.now())
 }
