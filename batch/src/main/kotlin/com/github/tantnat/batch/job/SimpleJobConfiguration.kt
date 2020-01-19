@@ -7,7 +7,9 @@ import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
+import org.springframework.batch.core.configuration.annotation.JobScope
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.item.ItemReader
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,7 +31,7 @@ class SimpleJobConfiguration(
             .build()
 
     @Bean
-    @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    @JobScope
     fun simpleJobStep(): Step = stepBuilderFactory.get("SimpleStep")
             .chunk<String,String>(5)
             .reader(simpleReader())
@@ -38,19 +40,19 @@ class SimpleJobConfiguration(
             .build()
 
     @Bean
-    @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    @StepScope
     fun simpleReader(): ItemReader<String> {
         return SimpleReader()
     }
 
     @Bean
-    @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    @StepScope
     fun simpleProcessor(): SimpleProcessor {
         return SimpleProcessor()
     }
 
     @Bean
-    @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    @StepScope
     fun simpleWriter(): SimpleWriter {
         return SimpleWriter()
     }
